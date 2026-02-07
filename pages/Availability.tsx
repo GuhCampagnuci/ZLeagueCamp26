@@ -12,13 +12,23 @@ interface AvailabilityProps {
 
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-// Função para limpar horários vindos do Sheets (ex: 1899-12-30T21:00... -> 21:00)
+// Função para converter horários do Sheets (ISO/UTC) para o horário local do usuário
 const formatTime = (timeStr: string) => {
-  if (!timeStr) return '00:00';
-  if (timeStr.includes('T')) {
-    const timePart = timeStr.split('T')[1];
-    return timePart.substring(0, 5);
+  if (!timeStr) return '--:--';
+  
+  // Tenta converter a string ISO (ex: 1899-12-30T22:30:00.000Z) para Date
+  const d = new Date(timeStr);
+  
+  // Se for uma data válida e contiver 'T' (indicativo de objeto Date do Sheets convertido para ISO)
+  if (!isNaN(d.getTime()) && timeStr.includes('T')) {
+    return d.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    });
   }
+  
+  // Fallback para strings simples "HH:mm" que já estejam corretas
   return timeStr.substring(0, 5);
 };
 
@@ -63,7 +73,6 @@ const AvailabilityPage: React.FC<AvailabilityProps> = ({ state, onUpdate }) => {
   const groupedAvailabilities = useMemo(() => {
     const groups: Record<string, Availability[]> = {};
     state.availabilities.forEach(avail => {
-      // Garantimos que o teamId seja tratado como string para a chave do objeto
       const tId = String(avail.teamId);
       if (!groups[tId]) {
         groups[tId] = [];
@@ -156,7 +165,6 @@ const AvailabilityPage: React.FC<AvailabilityProps> = ({ state, onUpdate }) => {
             </div>
           ) : (
             Object.entries(groupedAvailabilities).map(([teamId, avails]) => {
-              // Comparação segura convertendo ambos para String
               const team = state.teams.find(t => String(t.id) === String(teamId));
               
               return (
