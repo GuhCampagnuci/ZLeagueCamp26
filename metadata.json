@@ -1,0 +1,7 @@
+{
+  "name": "Camp fifa 26 Gmn",
+  "description": "A comprehensive tournament management platform for FIFA 26 enthusiasts, featuring squad management, availability tracking, challenge systems, and match reporting.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
