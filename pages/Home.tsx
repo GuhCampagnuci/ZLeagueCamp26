@@ -123,27 +123,32 @@ const Home: React.FC<HomeProps> = ({ state }) => {
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left whitespace-nowrap">
                 <thead>
                   <tr className="bg-zinc-950/50 text-[10px] uppercase font-black tracking-widest text-zinc-500 border-b border-zinc-800">
-                    <th className="px-6 py-4">Pos</th>
-                    <th className="px-6 py-4">Time</th>
+                    <th className="px-4 py-4 text-center">Pos</th>
+                    <th className="px-4 py-4">Time</th>
                     <th className="px-4 py-4 text-center">P</th>
                     <th className="px-4 py-4 text-center">J</th>
+                    <th className="px-4 py-4 text-center">V</th>
+                    <th className="px-4 py-4 text-center">E</th>
+                    <th className="px-4 py-4 text-center">D</th>
+                    <th className="px-4 py-4 text-center">GP</th>
+                    <th className="px-4 py-4 text-center">GC</th>
                     <th className="px-4 py-4 text-center">SG</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-900">
                   {leagueTable.map((entry, index) => (
                     <tr key={entry.teamId} className={`hover:bg-zinc-800/30 transition-colors ${index === 0 ? 'bg-blue-500/5' : ''}`}>
-                      <td className="px-6 py-4">
-                        <span className={`font-black italic text-lg ${index === 0 ? 'text-yellow-500' : 'text-zinc-600'}`}>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`font-black italic text-lg ${index === 0 ? 'text-yellow-500' : index < 4 ? 'text-blue-400' : 'text-zinc-600'}`}>
                           {index + 1}º
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={entry.logo} alt={entry.name} className="w-8 h-8 rounded-lg object-cover border border-zinc-800" />
+                          <img src={entry.logo} alt={entry.name} className="w-8 h-8 rounded-lg object-cover border border-zinc-800 shadow-sm" />
                           <span className={`font-bold uppercase italic text-sm ${index === 0 ? 'text-white' : 'text-zinc-300'}`}>
                             {entry.name}
                           </span>
@@ -153,6 +158,11 @@ const Home: React.FC<HomeProps> = ({ state }) => {
                         <span className="font-black text-blue-500 text-lg">{entry.points}</span>
                       </td>
                       <td className="px-4 py-4 text-center font-bold text-zinc-300">{entry.played}</td>
+                      <td className="px-4 py-4 text-center text-xs text-zinc-400 font-medium">{entry.wins}</td>
+                      <td className="px-4 py-4 text-center text-xs text-zinc-400 font-medium">{entry.draws}</td>
+                      <td className="px-4 py-4 text-center text-xs text-zinc-400 font-medium">{entry.losses}</td>
+                      <td className="px-4 py-4 text-center text-xs text-zinc-500">{entry.goalsFor}</td>
+                      <td className="px-4 py-4 text-center text-xs text-zinc-500">{entry.goalsAgainst}</td>
                       <td className="px-4 py-4 text-center">
                         <span className={`font-bold text-xs ${entry.goalDifference >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {entry.goalDifference > 0 ? `+${entry.goalDifference}` : entry.goalDifference}
