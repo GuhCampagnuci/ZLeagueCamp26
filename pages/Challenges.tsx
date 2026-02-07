@@ -13,7 +13,6 @@ interface ChallengesProps {
 // Helpers to fix Google Sheets date/time quirks
 const cleanDate = (dateStr: string) => {
   if (!dateStr) return '--/--/--';
-  // If it's an ISO string like 2026-02-25T03:00:00.000Z
   if (dateStr.includes('T')) {
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
@@ -25,11 +24,13 @@ const cleanDate = (dateStr: string) => {
 
 const cleanTime = (timeStr: string) => {
   if (!timeStr) return '--:--';
-  // Handle 1899-12-31T02:07:28.000Z or similar
-  if (timeStr.includes('T')) {
-    const parts = timeStr.split('T');
-    const timePart = parts[1].substring(0, 5);
-    return timePart;
+  const d = new Date(timeStr);
+  if (!isNaN(d.getTime()) && timeStr.includes('T')) {
+    return d.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    });
   }
   return timeStr.substring(0, 5);
 };
@@ -87,7 +88,7 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
   return (
     <div className="space-y-12 pb-12">
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Formulário de Envio - Sticky no Desktop */}
+        {/* Formulário de Envio */}
         <div className="space-y-6 lg:sticky lg:top-24">
           <div className="space-y-1">
             <h1 className="text-3xl font-black font-heading italic uppercase text-white tracking-tighter">Marcar Confronto</h1>
@@ -149,7 +150,7 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
           </form>
         </div>
 
-        {/* Lista de Desafios Ativos - Sem scroll interno para rolagem infinita da página */}
+        {/* Mural de Desafios */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-1">
             <h2 className="text-xl font-black font-heading italic uppercase flex items-center gap-3 text-white">
@@ -167,13 +168,11 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                 <p className="text-zinc-500 font-bold uppercase italic text-sm">Nenhum desafio no mural.</p>
               </div>
             ) : [...state.challenges].sort((a,b) => b.createdAt - a.createdAt).map(c => {
-              // Forced String comparison for IDs to handle Google Sheets data types
               const challenger = state.teams.find(t => String(t.id) === String(c.challengerTeamId));
               const challenged = state.teams.find(t => String(t.id) === String(c.challengedTeamId));
               
               return (
                 <div key={c.id} className="ea-card rounded-2xl overflow-hidden border-zinc-800/50 shadow-lg transition-all hover:border-blue-500/40 group">
-                  {/* Cabeçalho Compacto */}
                   <div className="px-4 py-2 bg-zinc-950/80 flex items-center justify-between border-b border-zinc-900/50">
                     <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${
                       c.status === 'Pendente' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
@@ -187,10 +186,8 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                     </span>
                   </div>
 
-                  {/* Miolo Super Compacto: Confronto Visual */}
                   <div className="p-4">
                     <div className="flex items-center gap-4">
-                      {/* Desafiante */}
                       <div className="flex-1 flex items-center gap-3 min-w-0">
                         <img 
                           src={challenger?.logo || 'https://placehold.co/60x60/18181b/3b82f6?text=?'} 
@@ -203,12 +200,10 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                         </div>
                       </div>
 
-                      {/* VS Compacto */}
                       <div className="flex flex-col items-center px-1">
                         <span className="font-heading font-black text-blue-500 text-[10px] italic">VS</span>
                       </div>
 
-                      {/* Desafiado */}
                       <div className="flex-1 flex items-center justify-end gap-3 min-w-0 text-right">
                         <div className="min-w-0 flex-1">
                           <h4 className="font-heading font-black text-xs md:text-sm text-zinc-100 truncate uppercase italic leading-tight">{challenged?.name || 'Clube ?'}</h4>
@@ -222,7 +217,6 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                       </div>
                     </div>
 
-                    {/* Detalhes do Jogo: Data e Hora limpos */}
                     <div className="mt-4 flex items-center justify-between border-t border-zinc-900/50 pt-3">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
@@ -240,7 +234,6 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                       </div>
                     </div>
 
-                    {/* Mensagem Compacta */}
                     {c.message && (
                       <div className="mt-2 p-2 bg-zinc-900/40 rounded-xl border border-zinc-800/30 flex gap-2 italic">
                         <MessageSquare size={12} className="text-blue-500/40 shrink-0 mt-0.5" />
@@ -251,7 +244,6 @@ const Challenges: React.FC<ChallengesProps> = ({ state, onUpdate }) => {
                     )}
                   </div>
 
-                  {/* Rodapé: Ações */}
                   {c.status === 'Pendente' && (
                     <div className="px-4 py-2.5 bg-zinc-950/60 border-t border-zinc-900 flex gap-2">
                       <button 
