@@ -12,6 +12,8 @@ interface TableEntry {
   teamId: string;
   name: string;
   logo: string;
+  president: string;
+  eaId?: string;
   points: number;
   played: number;
   wins: number;
@@ -39,6 +41,8 @@ const Home: React.FC<HomeProps> = ({ state }) => {
         teamId: team.id,
         name: team.name,
         logo: team.logo,
+        president: team.president,
+        eaId: team.ea_id,
         points: 0,
         played: 0,
         wins: 0,
@@ -148,10 +152,22 @@ const Home: React.FC<HomeProps> = ({ state }) => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={entry.logo} alt={entry.name} className="w-8 h-8 rounded-lg object-cover border border-zinc-800 shadow-sm" />
-                          <span className={`font-bold uppercase italic text-sm ${index === 0 ? 'text-white' : 'text-zinc-300'}`}>
-                            {entry.name}
-                          </span>
+                          <img src={entry.logo} alt={entry.name} className="w-10 h-10 rounded-lg object-cover border border-zinc-800 shadow-sm" />
+                          <div className="flex flex-col">
+                            <span className={`font-bold uppercase italic text-sm ${index === 0 ? 'text-white' : 'text-zinc-300'}`}>
+                              {entry.name}
+                            </span>
+                            <div className="flex flex-col -space-y-0.5">
+                              <span className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">
+                                {entry.president}
+                              </span>
+                              {entry.eaId && (
+                                <span className="text-[9px] text-zinc-500 font-bold uppercase">
+                                  ID EA: <span className="text-zinc-400">{entry.eaId}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-center">
