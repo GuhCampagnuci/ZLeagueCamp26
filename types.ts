@@ -11,6 +11,7 @@ export interface Team {
   id: string;
   name: string;
   president: string;
+  ea_id?: string;
   squad: Player[];
   logo: string;
 }
