@@ -205,9 +205,17 @@ const Squads: React.FC<SquadsProps> = ({ state }) => {
                 </div>
                 <div className="text-left">
                   <h2 className="font-heading font-black text-lg text-white uppercase italic leading-none mb-1">{team.name}</h2>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">PRESIDENTE:</span>
-                    <span className="text-[10px] text-blue-400 font-black uppercase italic">{team.president}</span>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">PRESIDENTE:</span>
+                      <span className="text-[10px] text-blue-400 font-black uppercase italic">{team.president}</span>
+                    </div>
+                    {team.ea_id && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">ID EA:</span>
+                        <span className="text-[10px] text-zinc-400 font-bold uppercase">{team.ea_id}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
