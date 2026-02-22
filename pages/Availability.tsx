@@ -164,7 +164,7 @@ const AvailabilityPage: React.FC<AvailabilityProps> = ({ state, onUpdate }) => {
               <p className="text-xs mt-2">Seja o primeiro a marcar território!</p>
             </div>
           ) : (
-            Object.entries(groupedAvailabilities).map(([teamId, avails]) => {
+            (Object.entries(groupedAvailabilities) as [string, Availability[]][]).map(([teamId, avails]) => {
               const team = state.teams.find(t => String(t.id) === String(teamId));
               
               return (
