@@ -24,6 +24,7 @@ export const syncFromSheets = async (): Promise<AppState | null> => {
     // 1. Vincular Jogadores aos seus Times
     const linkedTeams: Team[] = (rawData.teams || []).map((team: any) => ({
       ...team,
+      ea_id: team.ea_id || team.eaId || team['ea_id'],
       squad: (rawData.players || []).filter((p: any) => 
         String(p.team_id || p.teamId) === String(team.id)
       )
