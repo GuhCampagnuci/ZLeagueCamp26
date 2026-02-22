@@ -27,7 +27,7 @@ const MatchHistory: React.FC<HistoryProps> = ({ state }) => {
       });
   }, [state.reports, state.teams, searchTerm]);
 
-  const MatchCard = ({ report }: { report: MatchReport }) => {
+  const MatchCard: React.FC<{ report: MatchReport }> = ({ report }) => {
     const homeTeam = state.teams.find(t => String(t.id) === String(report.homeTeamId));
     const awayTeam = state.teams.find(t => String(t.id) === String(report.awayTeamId));
     const isExpanded = expandedMatch === report.id;
