@@ -1,8 +1,8 @@
 
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { AppState } from '../types';
-import { Trophy, Flame, Target, ChevronRight, Calendar } from 'lucide-react';
+import { AppState, MatchReport } from '../types';
+import { Trophy, Flame, Target, ChevronRight, Swords } from 'lucide-react';
 
 interface HomeProps {
   state: AppState;
@@ -30,6 +30,73 @@ const cleanDate = (dateStr: string | number) => {
   if (isNaN(d.getTime())) return String(dateStr);
   return d.toLocaleDateString('pt-BR');
 };
+
+// ── Bracket sub-components ──────────────────────────────────────────────────
+
+interface BracketSlotProps {
+  team?: TableEntry;
+  seed?: number;
+  isWinner?: boolean;
+  result?: MatchReport;
+  side: 'home' | 'away';
+  isFinal?: boolean;
+}
+
+const BracketSlot: React.FC<BracketSlotProps> = ({ team, seed, isWinner, result, side, isFinal }) => {
+  const score = result
+    ? side === 'home'
+      ? (result.homeTeamId === team?.teamId ? result.homeScore : result.awayScore)
+      : (result.awayTeamId === team?.teamId ? result.awayScore : result.homeScore)
+    : null;
+
+  if (!team) {
+    return (
+      <div className="flex items-center gap-2 p-3 rounded-xl border border-zinc-800 bg-zinc-900/40 opacity-40">
+        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+          <span className="text-[10px] text-zinc-600 font-black">?</span>
+        </div>
+        <span className="text-xs text-zinc-600 font-bold italic uppercase">A definir</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex items-center gap-2 p-3 rounded-xl border transition-all
+      ${isWinner
+        ? isFinal
+          ? 'border-yellow-500 bg-yellow-500/10 shadow-lg shadow-yellow-500/20'
+          : 'border-blue-500 bg-blue-500/10'
+        : result
+          ? 'border-zinc-800 bg-zinc-900/40 opacity-50'
+          : 'border-zinc-800 bg-zinc-900/60 hover:border-zinc-600'
+      }`}>
+      {seed !== undefined && (
+        <span className="text-[9px] font-black text-zinc-600 w-3 shrink-0">{seed}º</span>
+      )}
+      <img src={team.logo} alt={team.name} className="w-8 h-8 rounded-lg object-cover border border-zinc-800 shrink-0" />
+      <div className="flex flex-col min-w-0 flex-1">
+        <span className="text-xs font-black italic uppercase truncate text-zinc-100">{team.name}</span>
+        <span className="text-[9px] text-zinc-500 truncate">{team.president}</span>
+      </div>
+      {score !== null && (
+        <span className={`text-base font-black italic shrink-0 ${isWinner ? 'text-blue-400' : 'text-zinc-600'}`}>
+          {score}
+        </span>
+      )}
+    </div>
+  );
+};
+
+const BracketConnector: React.FC<{ flip?: boolean }> = ({ flip }) => (
+  <div className={`flex flex-col items-center justify-center w-12 shrink-0 ${flip ? 'scale-x-[-1]' : ''}`}>
+    <div className="w-full flex flex-col gap-0">
+      <div className="h-8 border-r-2 border-t-2 border-zinc-700 rounded-tr-lg" />
+      <div className="h-8 border-r-2 border-b-2 border-zinc-700 rounded-br-lg" />
+    </div>
+  </div>
+);
+
+// ────────────────────────────────────────────────────────────────────────────
 
 const Home: React.FC<HomeProps> = ({ state }) => {
   // Calculate League Table
@@ -99,6 +166,36 @@ const Home: React.FC<HomeProps> = ({ state }) => {
   const recentChallenges = [...state.challenges].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
   const recentReports = [...state.reports].sort((a, b) => b.timestamp - a.timestamp).slice(0, 3);
 
+  // Bracket: top 4 → 1º vs 4º (SF1), 2º vs 3º (SF2)
+  const bracketTeams = leagueTable.slice(0, 4);
+  const sf1 = [bracketTeams[0], bracketTeams[3]];
+  const sf2 = [bracketTeams[1], bracketTeams[2]];
+
+  const findMatchResult = (t1Id: string | undefined, t2Id: string | undefined): MatchReport | undefined => {
+    if (!t1Id || !t2Id) return undefined;
+    return [...state.reports]
+      .filter(r => r.phase === 'Fase Final')
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .find(r =>
+        (r.homeTeamId === t1Id && r.awayTeamId === t2Id) ||
+        (r.homeTeamId === t2Id && r.awayTeamId === t1Id)
+      );
+  };
+
+  const getWinner = (result: MatchReport | undefined, t1: TableEntry | undefined, t2: TableEntry | undefined): TableEntry | undefined => {
+    if (!result || !t1 || !t2) return undefined;
+    if (Number(result.homeScore) > Number(result.awayScore)) return result.homeTeamId === t1.teamId ? t1 : t2;
+    if (Number(result.homeScore) < Number(result.awayScore)) return result.homeTeamId === t1.teamId ? t2 : t1;
+    return undefined; // empate
+  };
+
+  const sf1Result = findMatchResult(sf1[0]?.teamId, sf1[1]?.teamId);
+  const sf2Result = findMatchResult(sf2[0]?.teamId, sf2[1]?.teamId);
+  const sf1Winner = getWinner(sf1Result, sf1[0], sf1[1]);
+  const sf2Winner = getWinner(sf2Result, sf2[0], sf2[1]);
+  const finalResult = sf1Winner && sf2Winner ? findMatchResult(sf1Winner.teamId, sf2Winner.teamId) : undefined;
+  const champion = sf1Winner && sf2Winner ? getWinner(finalResult, sf1Winner, sf2Winner) : undefined;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <section className="relative h-[180px] lg:h-[220px] rounded-3xl overflow-hidden flex items-center justify-center text-center px-6 border border-zinc-800 shadow-2xl">
@@ -115,6 +212,58 @@ const Home: React.FC<HomeProps> = ({ state }) => {
           <p className="text-zinc-400 text-sm lg:text-base font-bold uppercase tracking-[0.3em] opacity-80">1º Temporada</p>
         </div>
       </section>
+
+      {/* ── CHAVE FINAL ── */}
+      {bracketTeams.length >= 4 && (
+        <section className="ea-card rounded-3xl overflow-hidden border-t-4 border-t-yellow-500">
+          <div className="p-6 bg-gradient-to-b from-zinc-900 to-transparent flex items-center gap-2 border-b border-zinc-800/50">
+            <Swords size={20} className="text-yellow-500" />
+            <h2 className="font-heading font-black text-xl uppercase italic tracking-tight text-white">Fase Final</h2>
+            <span className="ml-auto text-[10px] font-black uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30">Fase 2</span>
+          </div>
+
+          <div className="p-6 overflow-x-auto">
+            <div className="flex items-center justify-center gap-0 min-w-[560px]">
+
+              {/* SEMIFINAL 1 */}
+              <div className="flex flex-col gap-2 w-44">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center mb-2">Semifinal 1</p>
+                <BracketSlot team={sf1[0]} seed={1} isWinner={sf1Winner?.teamId === sf1[0]?.teamId} result={sf1Result} side="home" />
+                <BracketSlot team={sf1[1]} seed={4} isWinner={sf1Winner?.teamId === sf1[1]?.teamId} result={sf1Result} side="away" />
+              </div>
+
+              {/* CONECTOR SF1 → FINAL */}
+              <BracketConnector />
+
+              {/* FINAL */}
+              <div className="flex flex-col gap-2 w-44 relative">
+                <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500 text-center mb-2">Final</p>
+                <BracketSlot team={sf1Winner} isWinner={champion?.teamId === sf1Winner?.teamId} result={finalResult} side="home" isFinal />
+                <BracketSlot team={sf2Winner} isWinner={champion?.teamId === sf2Winner?.teamId} result={finalResult} side="away" isFinal />
+                {champion && (
+                  <div className="absolute -bottom-10 left-0 right-0 flex flex-col items-center gap-1">
+                    <Trophy size={16} className="text-yellow-500" />
+                    <span className="text-[10px] font-black uppercase text-yellow-500 tracking-widest">Campeão</span>
+                    <span className="text-xs font-black italic text-white uppercase">{champion.name}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* CONECTOR FINAL ← SF2 */}
+              <BracketConnector flip />
+
+              {/* SEMIFINAL 2 */}
+              <div className="flex flex-col gap-2 w-44">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 text-center mb-2">Semifinal 2</p>
+                <BracketSlot team={sf2[0]} seed={2} isWinner={sf2Winner?.teamId === sf2[0]?.teamId} result={sf2Result} side="home" />
+                <BracketSlot team={sf2[1]} seed={3} isWinner={sf2Winner?.teamId === sf2[1]?.teamId} result={sf2Result} side="away" />
+              </div>
+
+            </div>
+          </div>
+          {champion && <div className="pb-8" />}
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

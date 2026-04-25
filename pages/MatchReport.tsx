@@ -15,6 +15,7 @@ const MatchReportPage: React.FC<ReportProps> = ({ state, onUpdate }) => {
   const [homeScore, setHomeScore] = useState(0);
   const [awayScore, setAwayScore] = useState(0);
   const [reporterId, setReporterId] = useState('');
+  const [phase, setPhase] = useState<'Fase de Grupos' | 'Fase Final'>('Fase de Grupos');
   const [isSaving, setIsSaving] = useState(false);
   
   const [selectedPlayersStats, setSelectedPlayersStats] = useState<PlayerMatchStats[]>([]);
@@ -67,9 +68,9 @@ const MatchReportPage: React.FC<ReportProps> = ({ state, onUpdate }) => {
     const timestamp = Date.now();
     
     // 1. Salva o Resumo da Partida na aba Reports
-    // Colunas: id, homeTeamId, awayTeamId, homeScore, awayScore, reporterTeamId, timestamp
+    // Colunas: id, homeTeamId, awayTeamId, homeScore, awayScore, reporterTeamId, timestamp, phase
     await addRowToSheets('Reports', [
-      id, homeId, awayId, homeScore, awayScore, reporterId, timestamp
+      id, homeId, awayId, homeScore, awayScore, reporterId, timestamp, phase
     ]);
 
     // 2. Salva cada Scout individual na nova aba PlayerStats
@@ -95,6 +96,7 @@ const MatchReportPage: React.FC<ReportProps> = ({ state, onUpdate }) => {
       awayScore,
       reporterTeamId: reporterId,
       timestamp,
+      phase,
       playerStats: selectedPlayersStats
     };
 
@@ -107,6 +109,7 @@ const MatchReportPage: React.FC<ReportProps> = ({ state, onUpdate }) => {
     setHomeScore(0);
     setAwayScore(0);
     setReporterId('');
+    setPhase('Fase de Grupos');
     setSelectedPlayersStats([]);
     setIsSaving(false);
   };
@@ -247,13 +250,30 @@ const MatchReportPage: React.FC<ReportProps> = ({ state, onUpdate }) => {
         </div>
 
         <div className="ea-card p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border-t-2 border-t-blue-500">
-          <div className="space-y-1.5 w-full md:w-64">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Responsável</label>
-            <select className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white outline-none focus:ring-1 focus:ring-blue-500" 
-              value={reporterId} onChange={(e) => setReporterId(e.target.value)}>
-              <option value="">Quem reporta...</option>
-              {state.teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <div className="space-y-1.5 w-full md:w-52">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Fase</label>
+              <div className="flex rounded-xl overflow-hidden border border-zinc-800">
+                {(['Fase de Grupos', 'Fase Final'] as const).map(p => (
+                  <button key={p} type="button" onClick={() => setPhase(p)}
+                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-wider transition-all
+                      ${phase === p
+                        ? p === 'Fase Final' ? 'bg-yellow-500 text-zinc-950' : 'bg-blue-600 text-white'
+                        : 'bg-zinc-900 text-zinc-500 hover:text-zinc-300'}`}>
+                    {p === 'Fase de Grupos' ? 'Grupos' : 'Final'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5 w-full md:w-64">
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Responsável</label>
+              <select className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white outline-none focus:ring-1 focus:ring-blue-500"
+                value={reporterId} onChange={(e) => setReporterId(e.target.value)}>
+                <option value="">Quem reporta...</option>
+                {state.teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
           </div>
 
           <button type="submit" disabled={isSaving}

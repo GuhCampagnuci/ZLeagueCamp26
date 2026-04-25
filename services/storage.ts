@@ -72,6 +72,7 @@ export const syncFromSheets = async (): Promise<AppState | null> => {
         homeScore: Number(report.homeScore) || 0,
         awayScore: Number(report.awayScore) || 0,
         timestamp: Number(report.timestamp) || Date.now(),
+        phase: report.phase || report.Phase || undefined,
         playerStats: Array.isArray(stats) ? stats : []
       };
     });

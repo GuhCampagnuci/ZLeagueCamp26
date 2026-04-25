@@ -53,6 +53,7 @@ export interface MatchReport {
   awayScore: number;
   reporterTeamId: string;
   timestamp: number;
+  phase?: 'Fase de Grupos' | 'Fase Final';
   playerStats: PlayerMatchStats[];
 }
 
