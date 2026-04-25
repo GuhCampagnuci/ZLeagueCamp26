@@ -292,7 +292,7 @@ const Home: React.FC<HomeProps> = ({ state }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-900">
-                  {leagueTable.slice(0, -1).map((entry, index) => (
+                  {leagueTable.map((entry, index) => (
                     <tr key={entry.teamId} className={`hover:bg-zinc-800/30 transition-colors ${index === 0 ? 'bg-blue-500/5' : ''}`}>
                       <td className="px-4 py-4 text-center">
                         <span className={`font-black italic text-lg ${index === 0 ? 'text-yellow-500' : index < 4 ? 'text-blue-400' : 'text-zinc-600'}`}>
